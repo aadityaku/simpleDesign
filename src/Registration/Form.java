@@ -17,6 +17,7 @@ public class Form extends javax.swing.JFrame {
     public static String host ="jdbc:mysql://localhost:3306/student";
     public static String username = "root";
     public static String password = "Aaditya@12345";
+    public static int count =0;
     String s = null;
     Connection con = null;
     PreparedStatement pst = null;
@@ -25,6 +26,7 @@ public class Form extends javax.swing.JFrame {
     String gender;
     public Form() {
         initComponents();
+        
     }
 
     /**
@@ -190,10 +192,20 @@ public class Form extends javax.swing.JFrame {
         update.setBackground(new java.awt.Color(0, 204, 204));
         update.setFont(new java.awt.Font("Arial Rounded MT Bold", 1, 14)); // NOI18N
         update.setText("Update");
+        update.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                updateActionPerformed(evt);
+            }
+        });
 
         delete.setBackground(new java.awt.Color(204, 0, 51));
         delete.setFont(new java.awt.Font("Arial Rounded MT Bold", 1, 14)); // NOI18N
         delete.setText("Delete");
+        delete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteActionPerformed(evt);
+            }
+        });
 
         clear.setBackground(new java.awt.Color(0, 153, 153));
         clear.setFont(new java.awt.Font("Arial Rounded MT Bold", 1, 14)); // NOI18N
@@ -226,7 +238,32 @@ public class Form extends javax.swing.JFrame {
                 "Id", "Name", "Dob", "Father's Name", "Gender", "Depart", "Email", "Mother's Name"
             }
         ));
+        tab.setColumnSelectionAllowed(true);
+        tab.addContainerListener(new java.awt.event.ContainerAdapter() {
+            public void componentAdded(java.awt.event.ContainerEvent evt) {
+                tabComponentAdded(evt);
+            }
+            public void componentRemoved(java.awt.event.ContainerEvent evt) {
+                tabComponentRemoved(evt);
+            }
+        });
+        tab.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tabMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(tab);
+        tab.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        if (tab.getColumnModel().getColumnCount() > 0) {
+            tab.getColumnModel().getColumn(0).setHeaderValue("Id");
+            tab.getColumnModel().getColumn(1).setHeaderValue("Name");
+            tab.getColumnModel().getColumn(2).setHeaderValue("Dob");
+            tab.getColumnModel().getColumn(3).setHeaderValue("Father's Name");
+            tab.getColumnModel().getColumn(4).setHeaderValue("Gender");
+            tab.getColumnModel().getColumn(5).setHeaderValue("Depart");
+            tab.getColumnModel().getColumn(6).setHeaderValue("Email");
+            tab.getColumnModel().getColumn(7).setHeaderValue("Mother's Name");
+        }
 
         jLabel12.setBackground(new java.awt.Color(0, 204, 204));
         jLabel12.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
@@ -384,9 +421,9 @@ public class Form extends javax.swing.JFrame {
                                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(fathersName, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -429,14 +466,11 @@ public class Form extends javax.swing.JFrame {
                             .addComponent(clear)
                             .addComponent(show)
                             .addComponent(save)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(32, 32, 32)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(oneDelete)
                             .addComponent(oneUpdate)
-                            .addComponent(oneView)))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(oneView))
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 519, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel8)
@@ -490,22 +524,17 @@ public class Form extends javax.swing.JFrame {
         
         gender =  male.getText();
     }//GEN-LAST:event_maleMouseClicked
-    private void database(){
-        
-        try{
-            con = DriverManager.getConnection(host,username,password);
-            
-        }
-        catch(SQLException e){
-            JOptionPane.showMessageDialog(null, e.getMessage());
-        }
+
+    private Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(host,username,password);
     }
+    
     private void saveMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_saveMouseClicked
         
         try{
             
-           con = DriverManager.getConnection(host,username,password);
-           
+//           con = DriverManager.getConnection(host,username,password);
+           con = getConnection();
            Date d = dob.getDate();
            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
            
@@ -578,10 +607,12 @@ public class Form extends javax.swing.JFrame {
         // TODO add your handling code here:
         
         try{
-            con = DriverManager.getConnection(host,username,password);
+            con = getConnection();
             pst = con.prepareStatement("select * from studentregistration");
             rs = pst.executeQuery();
+            
             while(rs.next()){
+                count++;
                 
                 String id = String.valueOf(rs.getInt("id"));
                 String studentName = rs.getString("studentName");
@@ -597,6 +628,11 @@ public class Form extends javax.swing.JFrame {
                 DefaultTableModel tabModel = (DefaultTableModel)(tab.getModel());
                 
                 tabModel.addRow(table);
+                
+                oneViewActionPerformed(evt);
+                oneDeleteActionPerformed(evt);
+                oneUpdateActionPerformed(evt); 
+                
             }
         }
         catch(SQLException e){
@@ -616,9 +652,10 @@ public class Form extends javax.swing.JFrame {
             table.removeRow(0);
         }
     }//GEN-LAST:event_clearActionPerformed
-
+  
     private void oneDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_oneDeleteActionPerformed
         // TODO add your handling code here:
+        
     }//GEN-LAST:event_oneDeleteActionPerformed
 
     private void oneViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_oneViewActionPerformed
@@ -632,6 +669,106 @@ public class Form extends javax.swing.JFrame {
     private void oneDeleteMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_oneDeleteMouseClicked
         
     }//GEN-LAST:event_oneDeleteMouseClicked
+
+    private void tabComponentAdded(java.awt.event.ContainerEvent evt) {//GEN-FIRST:event_tabComponentAdded
+        // TODO add your handling code here:
+        
+    }//GEN-LAST:event_tabComponentAdded
+
+    private void tabComponentRemoved(java.awt.event.ContainerEvent evt) {//GEN-FIRST:event_tabComponentRemoved
+        // TODO add your handling code here:
+    }//GEN-LAST:event_tabComponentRemoved
+
+    private void tabMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tabMouseClicked
+        // TODO add your handling code here:
+        
+    }//GEN-LAST:event_tabMouseClicked
+
+    private void deleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteActionPerformed
+        // TODO add your handling code here:
+        try{
+            con = getConnection();
+            int selectedRow = tab.getSelectedRow();
+            
+             if (selectedRow >0) {
+                int studentId = Integer.parseInt(tab.getValueAt(selectedRow, 0).toString());
+                System.out.println(studentId);
+                try (Connection connection = con) {
+                    String sql = "DELETE FROM studentregistration WHERE id = ?";
+                    try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                        preparedStatement.setInt(1, studentId);
+                        preparedStatement.executeUpdate();
+                        JOptionPane.showMessageDialog(null, "Student  deleted successfully!");
+                        clearActionPerformed(evt);
+                        showActionPerformed(evt); 
+                    }
+                }
+            } else {
+                JOptionPane.showMessageDialog(null, "Please select a student to delete.");
+            }
+        }
+        catch(SQLException e){
+            JOptionPane.showMessageDialog(null, e.getMessage());
+            
+        }
+    }//GEN-LAST:event_deleteActionPerformed
+
+    private void updateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateActionPerformed
+        // TODO add your handling code here:
+        
+     try{
+            con = getConnection();
+//            ResultSet rt;
+            int selectedRow = tab.getSelectedRow();
+            
+             if (selectedRow >0) {
+                int studentId = Integer.parseInt(tab.getValueAt(selectedRow, 0).toString());
+                System.out.println(studentId);
+                try (Connection connection = con) {
+                    
+                    String sql = "select * FROM studentregistration WHERE id = ' "+studentId+" ';";
+                    PreparedStatement pt = con.prepareStatement(sql);
+//                    pt.setInt(1, studentId);
+                    ResultSet rt  = pt.executeQuery();
+                    while(rt.next()){
+                    studentName.setText(rt.getString("studentName"));
+                    fathersName.setText(rt.getString("fathersName"));
+                    mothersName.setText(rt.getString("mothersName"));
+//                    dob.setDate(null);
+//                    depart.setSelectedIndex(0);
+                    mob.setText(rt.getString("mob"));
+                    email.setText(rt.getString("email"));
+                    }
+                    try (PreparedStatement preparedStatement = connection.prepareStatement("UPDATE studentregistration SET studentName = ?,fathersName = ?,mothersName = ?,gender = ?,depart = ?,dob = ?,mob = ?,email = ? WHERE id = ?")) {
+                        Date d = dob.getDate();
+                       SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                       String dob = sdf.format(d);
+                        
+                        preparedStatement.setString(1,studentName.getText());
+                        preparedStatement.setString(2,fathersName.getText());
+                        preparedStatement.setString(3,mothersName.getText());
+                        preparedStatement.setString(4,gender);
+                        preparedStatement.setString(5,depart.getSelectedItem().toString());
+                        preparedStatement.setString(6,dob);
+                        preparedStatement.setString(7,mob.getText());
+                        preparedStatement.setString(8,email.getText());
+                        preparedStatement.setInt(9, studentId);
+                        preparedStatement.executeUpdate();
+                        clearFields();
+                        JOptionPane.showMessageDialog(null, "Record updated successfully!");
+                        clearActionPerformed(evt);
+                        showActionPerformed(evt); 
+                    }
+                }
+            } else {
+                JOptionPane.showMessageDialog(null, "Please select a Student.");
+            }
+        }
+        catch(SQLException e){
+            JOptionPane.showMessageDialog(null, e.getMessage());
+            
+        }
+    }//GEN-LAST:event_updateActionPerformed
  
     /**
      * @param args the command line arguments
@@ -665,6 +802,7 @@ public class Form extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new Form().setVisible(true);
+                
             }
         });
     }
